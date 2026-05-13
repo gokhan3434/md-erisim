@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#08130f">
   <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon-180.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=4">
+  <link rel="stylesheet" href="./styles.css?v=5">
 </head>
 <body>
   <div class="ambient ambient-a"></div>
@@ -27,22 +27,17 @@
         <div class="card-head">
           <div class="status-row">
             <span class="status-dot"></span>
-            <span>Yetkili giriş</span>
+            <span>Lisans doğrulama</span>
           </div>
-          <p class="card-kicker">Oturum doğrulama</p>
+          <p class="card-kicker">Yetkili erişim anahtarı gerekli</p>
         </div>
 
         <label class="field">
-          <span>Kullanıcı adı</span>
-          <input id="username" name="username" type="text" autocomplete="username" placeholder="admin" required>
+          <span>Lisans anahtarı</span>
+          <input id="license-key" name="license-key" type="text" autocapitalize="characters" spellcheck="false" placeholder="MD-XXXX-XXXX-XXXX" required>
         </label>
 
-        <label class="field">
-          <span>Şifre</span>
-          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
-        </label>
-
-        <button type="submit" class="primary-button">Giriş Yap</button>
+        <button type="submit" class="primary-button">Erişimi Aç</button>
         <p id="login-error" class="form-error" hidden></p>
       </form>
     </section>
@@ -95,6 +90,17 @@
 
         <p id="search-status" class="search-status">Veri yükleniyor...</p>
 
+        <section id="scan-card" class="scan-card" hidden aria-live="polite">
+          <div class="scan-head">
+            <p class="eyebrow">Canlı Tarama</p>
+            <span id="scan-code" class="scan-code">--</span>
+          </div>
+          <div class="scan-viewport">
+            <div class="scan-line"></div>
+            <ul id="scan-feed" class="scan-feed"></ul>
+          </div>
+        </section>
+
         <section id="result-card" class="result-card empty-state" aria-live="polite">
           <div class="empty-illustration">MD</div>
           <p>Kod bekleniyor</p>
@@ -103,6 +109,6 @@
     </main>
   </div>
 
-  <script src="./app.js?v=4" defer></script>
+  <script src="./app.js?v=5" defer></script>
 </body>
 </html>

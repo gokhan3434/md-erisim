@@ -1,20 +1,29 @@
-const AUTH = {
-  username: "admin",
-  password: "Acarkent2026!"
+const LICENSE_HASHES = new Set([
+  "3c368da71fef19f1b43359250bbf328321726524141f1f6467f778c63b93b195",
+  "d45e984e3578e2dba58b2eb8dda4f05ced75c517d20c48c5a62cbb02a4de5f6f"
+]);
+
+const STORAGE_KEYS = {
+  activation: "md_access_activation_v1"
 };
 
 const state = {
   records: [],
   selectedRecord: null,
   lookupTimer: null,
-  isReady: false
+  isReady: false,
+  scanRunId: 0
 };
 
 const loginShell = document.getElementById("login-shell");
 const loginForm = document.getElementById("login-form");
 const loginError = document.getElementById("login-error");
+const licenseKeyInput = document.getElementById("license-key");
 const appShell = document.getElementById("app");
 const resultCard = document.getElementById("result-card");
+const scanCard = document.getElementById("scan-card");
+const scanFeed = document.getElementById("scan-feed");
+const scanCode = document.getElementById("scan-code");
 const searchForm = document.getElementById("search-form");
 const searchInput = document.getElementById("search-input");
 const searchStatus = document.getElementById("search-status");
@@ -28,6 +37,54 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function delay(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function sha256(value) {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function normalizeLicenseValue(value) {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function formatLicenseInput(value) {
+  const cleaned = normalizeLicenseValue(value).slice(0, 16);
+  return cleaned.match(/.{1,4}/g)?.join("-") ?? cleaned;
+}
+
+async function buildDeviceFingerprint() {
+  const seed = [
+    navigator.userAgent,
+    navigator.language,
+    navigator.platform,
+    screen.width,
+    screen.height,
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  ].join("|");
+  return sha256(seed);
+}
+
+function readActivation() {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.activation);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeActivation(payload) {
+  window.localStorage.setItem(STORAGE_KEYS.activation, JSON.stringify(payload));
+}
+
+function clearActivation() {
+  window.localStorage.removeItem(STORAGE_KEYS.activation);
 }
 
 function setAuthenticated(isAuthenticated) {
@@ -54,8 +111,14 @@ function setStatus(message) {
   searchStatus.textContent = message;
 }
 
+function hideScanCard() {
+  scanCard.hidden = true;
+  scanFeed.innerHTML = "";
+}
+
 function resetResultCard() {
   state.selectedRecord = null;
+  resultCard.hidden = false;
   resultCard.className = "result-card empty-state";
   resultCard.innerHTML = `
     <div class="empty-illustration">MD</div>
@@ -66,7 +129,9 @@ function resetResultCard() {
 function logout() {
   setAuthenticated(false);
   loginError.hidden = true;
+  licenseKeyInput.value = "";
   searchInput.value = "";
+  hideScanCard();
   setStatus(state.isReady ? "Sistem hazır." : "Veri yükleniyor...");
   resetResultCard();
 }
@@ -95,6 +160,7 @@ function openPreferredMap(record) {
 
 function renderResult(record) {
   state.selectedRecord = record;
+  resultCard.hidden = false;
   resultCard.className = "result-card";
   resultCard.innerHTML = `
     <div class="result-head">
@@ -150,17 +216,65 @@ function findRecord(code) {
   }) || null;
 }
 
+function buildScanSteps(code) {
+  return [
+    `> kanal_acildi :: ${code}`,
+    `> indeks_taranıyor :: villa_kodlari`,
+    `> sahip_kumesi_cozuluyor`,
+    `> telefon_kayitlari_capraz_esleniyor`,
+    `> adres_dizini_parcalaniyor`,
+    `> iliskili_kayitlar_filtreleniyor`,
+    `> sonuç_dogrulaniyor`
+  ];
+}
+
+async function runScanSequence(code) {
+  const runId = ++state.scanRunId;
+  scanCode.textContent = code;
+  scanFeed.innerHTML = "";
+  scanCard.hidden = false;
+  resultCard.hidden = true;
+
+  const steps = buildScanSteps(code);
+  for (let index = 0; index < steps.length; index += 1) {
+    if (runId !== state.scanRunId) {
+      return false;
+    }
+
+    const item = document.createElement("li");
+    item.textContent = steps[index];
+    scanFeed.appendChild(item);
+
+    if (index > 0) {
+      const previous = scanFeed.children[index - 1];
+      previous.classList.remove("active");
+    }
+
+    item.classList.add("active");
+    await delay(110 + index * 45);
+  }
+
+  const last = scanFeed.lastElementChild;
+  if (last) {
+    last.classList.remove("active");
+  }
+
+  return runId === state.scanRunId;
+}
+
 async function lookupCode(rawValue) {
   const code = normalizeCode(rawValue);
   searchInput.value = code;
 
   if (!code) {
+    hideScanCard();
     setStatus("Sistem hazır.");
     resetResultCard();
     return;
   }
 
   if (!looksLikeLookupCode(code)) {
+    hideScanCard();
     setStatus("Geçerli bir kod girin.");
     resetResultCard();
     return;
@@ -171,8 +285,14 @@ async function lookupCode(rawValue) {
     return;
   }
 
-  setStatus(`${code} sorgulanıyor...`);
+  setStatus(`${code} taranıyor...`);
+  const scanFinished = await runScanSequence(code);
+  if (!scanFinished) {
+    return;
+  }
+
   const record = findRecord(code);
+  hideScanCard();
 
   if (record) {
     renderResult(record);
@@ -191,8 +311,48 @@ function scheduleLookup() {
   }, 180);
 }
 
+async function activateWithLicense(rawLicense) {
+  const normalized = normalizeLicenseValue(rawLicense);
+  if (normalized.length < 8) {
+    throw new Error("Geçerli bir lisans anahtarı girin.");
+  }
+
+  const licenseHash = await sha256(normalized);
+  if (!LICENSE_HASHES.has(licenseHash)) {
+    throw new Error("Lisans anahtarı doğrulanamadı.");
+  }
+
+  const fingerprint = await buildDeviceFingerprint();
+  writeActivation({
+    licenseHash,
+    fingerprint,
+    activatedAt: new Date().toISOString()
+  });
+}
+
+async function restoreActivation() {
+  const activation = readActivation();
+  if (!activation) {
+    return;
+  }
+
+  const fingerprint = await buildDeviceFingerprint();
+  if (activation.fingerprint !== fingerprint) {
+    clearActivation();
+    return;
+  }
+
+  if (!LICENSE_HASHES.has(activation.licenseHash)) {
+    clearActivation();
+    return;
+  }
+
+  setAuthenticated(true);
+}
+
 async function boot() {
   try {
+    await restoreActivation();
     const response = await fetch("./data/residents.json");
     const payload = await response.json();
     loadRecords(payload.records || []);
@@ -205,18 +365,19 @@ loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   loginError.hidden = true;
 
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value;
-
-  if (username !== AUTH.username || password !== AUTH.password) {
+  try {
+    await activateWithLicense(licenseKeyInput.value);
+    setAuthenticated(true);
+    setStatus(state.isReady ? "Sistem hazır." : "Veri yükleniyor...");
+    searchInput.focus();
+  } catch (error) {
     loginError.hidden = false;
-    loginError.textContent = "Kullanıcı adı veya şifre hatalı.";
-    return;
+    loginError.textContent = error.message;
   }
+});
 
-  setAuthenticated(true);
-  setStatus(state.isReady ? "Sistem hazır." : "Veri yükleniyor...");
-  searchInput.focus();
+licenseKeyInput.addEventListener("input", () => {
+  licenseKeyInput.value = formatLicenseInput(licenseKeyInput.value);
 });
 
 searchForm.addEventListener("submit", async (event) => {
@@ -236,8 +397,13 @@ document.querySelectorAll("[data-query]").forEach((button) => {
   });
 });
 
-logoutButton.addEventListener("click", logout);
+logoutButton.addEventListener("click", () => {
+  clearActivation();
+  state.scanRunId += 1;
+  logout();
+});
 
 setAuthenticated(false);
+hideScanCard();
 resetResultCard();
 boot();
