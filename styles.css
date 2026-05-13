@@ -92,6 +92,36 @@ body::before {
   opacity: 0.18;
 }
 
+.privacy-shield {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at center, rgba(35, 117, 76, 0.18), transparent 36%),
+    linear-gradient(180deg, rgba(3, 8, 6, 0.96), rgba(5, 13, 10, 0.98));
+  backdrop-filter: blur(18px);
+}
+
+.privacy-card {
+  width: min(100%, 320px);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 28px 22px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: rgba(8, 19, 14, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.privacy-text {
+  margin: 0;
+  color: var(--muted);
+}
+
 button,
 input,
 select {

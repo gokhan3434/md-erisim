@@ -19,6 +19,7 @@ const loginShell = document.getElementById("login-shell");
 const loginForm = document.getElementById("login-form");
 const loginError = document.getElementById("login-error");
 const licenseKeyInput = document.getElementById("license-key");
+const privacyShield = document.getElementById("privacy-shield");
 const appShell = document.getElementById("app");
 const resultCard = document.getElementById("result-card");
 const scanCard = document.getElementById("scan-card");
@@ -109,6 +110,10 @@ function normalizeRecordCode(value) {
 
 function setStatus(message) {
   searchStatus.textContent = message;
+}
+
+function setPrivacyShield(isVisible) {
+  privacyShield.hidden = !isVisible;
 }
 
 function hideScanCard() {
@@ -403,7 +408,20 @@ logoutButton.addEventListener("click", () => {
   logout();
 });
 
+document.addEventListener("visibilitychange", () => {
+  setPrivacyShield(document.hidden);
+});
+
+window.addEventListener("pagehide", () => {
+  setPrivacyShield(true);
+});
+
+window.addEventListener("pageshow", () => {
+  setPrivacyShield(false);
+});
+
 setAuthenticated(false);
+setPrivacyShield(false);
 hideScanCard();
 resetResultCard();
 boot();
