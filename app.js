@@ -21,6 +21,15 @@ const searchStatus = document.getElementById("search-status");
 const logoutButton = document.getElementById("logout-button");
 const mapProvider = document.getElementById("map-provider");
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function setAuthenticated(isAuthenticated) {
   loginShell.hidden = isAuthenticated;
   appShell.hidden = !isAuthenticated;
@@ -48,7 +57,10 @@ function setStatus(message) {
 function resetResultCard() {
   state.selectedRecord = null;
   resultCard.className = "result-card empty-state";
-  resultCard.innerHTML = "<p>Kod bekleniyor.</p>";
+  resultCard.innerHTML = `
+    <div class="empty-illustration">MD</div>
+    <p>Kod bekleniyor</p>
+  `;
 }
 
 function logout() {
@@ -68,6 +80,14 @@ function buildMapLinks(address) {
   };
 }
 
+function formatPhone(phone) {
+  const clean = String(phone || "").replace(/\D+/g, "");
+  if (!clean) {
+    return "-";
+  }
+  return `<a class="phone-link" href="tel:${clean}">${escapeHtml(phone)}</a>`;
+}
+
 function openPreferredMap(record) {
   const provider = mapProvider.value;
   window.open(record.map_links[provider], "_blank", "noopener");
@@ -79,30 +99,30 @@ function renderResult(record) {
   resultCard.innerHTML = `
     <div class="result-head">
       <div>
-        <p class="eyebrow">Kod ${record.villa_code}</p>
-        <h3>${record.resident_name} ${record.resident_surname}</h3>
+        <p class="eyebrow">Kod ${escapeHtml(record.villa_code)}</p>
+        <h3>${escapeHtml(record.resident_name)} ${escapeHtml(record.resident_surname)}</h3>
       </div>
-      <span class="type-chip">${record.villa_type} tipi kayıt</span>
+      <span class="type-chip">${escapeHtml(record.villa_type)} tipi kayıt</span>
     </div>
     <dl class="detail-grid">
       <div>
         <dt>Telefon</dt>
-        <dd>${record.phone || "-"}</dd>
+        <dd>${formatPhone(record.phone)}</dd>
       </div>
       <div>
         <dt>Ek telefon</dt>
-        <dd>${record.alt_phone || "-"}</dd>
+        <dd>${formatPhone(record.alt_phone)}</dd>
       </div>
-      <div>
+      <div class="full-span">
         <dt>Adres</dt>
-        <dd>${record.address || "-"}</dd>
+        <dd>${escapeHtml(record.address || "-")}</dd>
       </div>
     </dl>
     <div class="map-actions">
       <button id="primary-route" class="primary-button" type="button">Adrese Git</button>
-      <a class="ghost-button inline-link" href="${record.map_links.google}" target="_blank" rel="noopener">Google Maps</a>
-      <a class="ghost-button inline-link" href="${record.map_links.apple}" target="_blank" rel="noopener">Apple Maps</a>
-      <a class="ghost-button inline-link" href="${record.map_links.yandex}" target="_blank" rel="noopener">Yandex</a>
+      <a class="inline-link ghost-button" href="${record.map_links.google}" target="_blank" rel="noopener">Google Maps</a>
+      <a class="inline-link ghost-button" href="${record.map_links.apple}" target="_blank" rel="noopener">Apple Maps</a>
+      <a class="inline-link ghost-button" href="${record.map_links.yandex}" target="_blank" rel="noopener">Yandex</a>
     </div>
   `;
 
@@ -112,8 +132,8 @@ function renderResult(record) {
 function loadRecords(records) {
   state.records = records.map((record) => ({
     ...record,
-    villa_code: record.villa_code.trim().toUpperCase(),
-    villa_type: (record.villa_type || record.villa_code[0] || "").toUpperCase(),
+    villa_code: String(record.villa_code || "").trim().toUpperCase(),
+    villa_type: String(record.villa_type || record.villa_code?.[0] || "").toUpperCase(),
     map_links: buildMapLinks(record.address)
   }));
   state.isReady = true;

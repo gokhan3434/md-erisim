@@ -4,33 +4,44 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>MD Erişim</title>
-  <meta name="theme-color" content="#06110d">
+  <meta name="theme-color" content="#08130f">
   <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon-180.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=4">
 </head>
 <body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
   <div class="screen-noise"></div>
+
   <div class="page-shell">
     <section id="login-shell" class="login-shell">
-      <div class="login-copy">
+      <div class="brand-panel">
+        <div class="brand-badge">MD</div>
         <p class="eyebrow">MD Erişim</p>
-        <h1>Operatör Girişi</h1>
+        <h1>Operatör paneli</h1>
+        <p class="hero-copy">Acarkent kayıt sorgulama ekranı</p>
       </div>
 
       <form id="login-form" class="login-card">
-        <div class="status-row">
-          <span class="status-dot"></span>
-          <span>Yerel oturum doğrulama</span>
+        <div class="card-head">
+          <div class="status-row">
+            <span class="status-dot"></span>
+            <span>Yetkili giriş</span>
+          </div>
+          <p class="card-kicker">Oturum doğrulama</p>
         </div>
-        <label>
-          Kullanıcı adı
+
+        <label class="field">
+          <span>Kullanıcı adı</span>
           <input id="username" name="username" type="text" autocomplete="username" placeholder="admin" required>
         </label>
-        <label>
-          Şifre
+
+        <label class="field">
+          <span>Şifre</span>
           <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
         </label>
+
         <button type="submit" class="primary-button">Giriş Yap</button>
         <p id="login-error" class="form-error" hidden></p>
       </form>
@@ -39,18 +50,20 @@
     <main id="app" class="app-shell" hidden>
       <header class="topbar">
         <div>
-          <p class="eyebrow">MD Kod Sorgu Modu</p>
+          <p class="eyebrow">MD Erişim</p>
           <h2>Kayıt sorgu paneli</h2>
         </div>
+
         <div class="topbar-actions">
           <label class="map-preference">
-            Varsayılan uygulama
+            <span>Varsayılan harita</span>
             <select id="map-provider">
               <option value="apple">Apple Maps</option>
               <option value="google">Google Maps</option>
               <option value="yandex">Yandex</option>
             </select>
           </label>
+
           <button id="logout-button" class="ghost-button" type="button">Çıkış</button>
         </div>
       </header>
@@ -59,7 +72,7 @@
         <div class="panel-copy">
           <p class="eyebrow">Kod Sorgu</p>
           <h3>Villa kodu girin</h3>
-          <p class="subtle-text"><code>A031</code> <code>B344</code> <code>C044</code></p>
+          <p class="subtle-text">A031 · B344 · C044</p>
         </div>
 
         <form id="search-form" class="search-box" autocomplete="off">
@@ -71,7 +84,7 @@
             spellcheck="false"
             placeholder="Villa kodu yazın"
           >
-          <button type="submit" class="primary-button">Bul</button>
+          <button type="submit" class="primary-button">Sorgula</button>
         </form>
 
         <div class="quick-codes">
@@ -83,12 +96,13 @@
         <p id="search-status" class="search-status">Veri yükleniyor...</p>
 
         <section id="result-card" class="result-card empty-state" aria-live="polite">
-          <p>Kod bekleniyor.</p>
+          <div class="empty-illustration">MD</div>
+          <p>Kod bekleniyor</p>
         </section>
       </section>
     </main>
   </div>
 
-  <script src="./app.js" defer></script>
+  <script src="./app.js?v=4" defer></script>
 </body>
 </html>
