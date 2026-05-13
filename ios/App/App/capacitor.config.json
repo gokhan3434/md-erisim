@@ -1,0 +1,11 @@
+{
+	"appId": "com.meryemdilber.mderisim",
+	"appName": "MD Erişim",
+	"webDir": "www",
+	"bundledWebRuntime": false,
+	"ios": {
+		"contentInset": "automatic",
+		"scrollEnabled": false
+	},
+	"packageClassList": []
+}

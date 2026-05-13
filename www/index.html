@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MD Erişim</title>
+  <meta name="theme-color" content="#06110d">
+  <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="screen-noise"></div>
+  <div class="page-shell">
+    <section id="login-shell" class="login-shell">
+      <div class="login-copy">
+        <p class="eyebrow">MD Erişim</p>
+        <h1>Operatör Girişi</h1>
+      </div>
+
+      <form id="login-form" class="login-card">
+        <div class="status-row">
+          <span class="status-dot"></span>
+          <span>Yerel oturum doğrulama</span>
+        </div>
+        <label>
+          Kullanıcı adı
+          <input id="username" name="username" type="text" autocomplete="username" placeholder="admin" required>
+        </label>
+        <label>
+          Şifre
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+        </label>
+        <button type="submit" class="primary-button">Giriş Yap</button>
+        <p id="login-error" class="form-error" hidden></p>
+      </form>
+    </section>
+
+    <main id="app" class="app-shell" hidden>
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">MD Kod Sorgu Modu</p>
+          <h2>Kayıt sorgu paneli</h2>
+        </div>
+        <div class="topbar-actions">
+          <label class="map-preference">
+            Varsayılan uygulama
+            <select id="map-provider">
+              <option value="apple">Apple Maps</option>
+              <option value="google">Google Maps</option>
+              <option value="yandex">Yandex</option>
+            </select>
+          </label>
+          <button id="logout-button" class="ghost-button" type="button">Çıkış</button>
+        </div>
+      </header>
+
+      <section class="lookup-panel">
+        <div class="panel-copy">
+          <p class="eyebrow">Kod Sorgu</p>
+          <h3>Villa kodu girin</h3>
+          <p class="subtle-text"><code>A031</code> <code>B344</code> <code>C044</code></p>
+        </div>
+
+        <form id="search-form" class="search-box" autocomplete="off">
+          <input
+            id="search-input"
+            type="text"
+            inputmode="text"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="Villa kodu yazın"
+          >
+          <button type="submit" class="primary-button">Bul</button>
+        </form>
+
+        <div class="quick-codes">
+          <button class="text-button" type="button" data-query="A031">A031</button>
+          <button class="text-button" type="button" data-query="B344">B344</button>
+          <button class="text-button" type="button" data-query="C044">C044</button>
+        </div>
+
+        <p id="search-status" class="search-status">Veri yükleniyor...</p>
+
+        <section id="result-card" class="result-card empty-state" aria-live="polite">
+          <p>Kod bekleniyor.</p>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
